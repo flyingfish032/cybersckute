@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlalchemy
+asyncssh
+openai
+python-dotenv
