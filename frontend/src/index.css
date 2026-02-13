@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-hacker-black: #0b0f19;
+  --color-hacker-dark: #0f172a;
+  --color-neon-green: #00ff41;
+  --color-neon-red: #ff0033;
+  --color-neon-blue: #00f3ff;
+  --color-dim-gray: #1e293b;
+
+  --font-mono: "Fira Code", "Courier New", monospace;
+
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-blink: blink 1s step-end infinite;
+
+  @keyframes scanline {
+    0% {
+      transform: translateY(-100%);
+    }
+
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes blink {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-hacker-black text-neon-green font-mono overflow-auto;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00ff41;
+}
+
+.glow-text {
+  text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+}
+
+.glow-box {
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.map-container .leaflet-container {
+  background: #0b0f19 !important;
+}
