@@ -2,5 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 asyncssh
-openai
+google-genai
 python-dotenv
+python-multipart
+requests

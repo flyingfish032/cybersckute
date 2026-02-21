@@ -2,9 +2,12 @@ import asyncio
 import asyncssh
 import sys
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from .database import SessionLocal
 from .models import Attacker, HoneypotCommand, Credential, ThreatReport
-from .ai_analyzer import analyze_command
+from .ai_analyzer import classify_command
 from .websocket_manager import manager
 import random
 from datetime import datetime
@@ -117,25 +120,38 @@ class FakeShell(asyncssh.SSHServerProcess):
                 db.commit()
                 db.refresh(attacker)
             
-            # Log Command
-            h_cmd = HoneypotCommand(attacker_id=attacker.id, command=cmd)
-            db.add(h_cmd)
-            
-            # AI Analysis
-            analysis = analyze_command(cmd)
+            # Instant rule-based analysis — Gemini is reserved for report generation only
+            analysis = classify_command(cmd)
             risk_score = analysis.get("score", 0)
-            
+            ttp_tag = analysis.get("ttp", "")
+
+            # Log Command with severity and TTP
+            h_cmd = HoneypotCommand(
+                attacker_id=attacker.id,
+                command=cmd,
+                severity=analysis.get("severity", "LOW"),
+                ttp=ttp_tag
+            )
+            db.add(h_cmd)
+
             # Update Risk Score
             if risk_score > attacker.risk_score:
                 attacker.risk_score = risk_score
-            
+
+            # Merge TTP tag onto attacker
+            if ttp_tag:
+                existing_ttps = set(filter(None, (attacker.ttp_tags or "").split(",")))
+                existing_ttps.add(ttp_tag)
+                attacker.ttp_tags = ",".join(sorted(existing_ttps))
+
             # Create Threat Report if high risk
             if risk_score > 50:
                 report = ThreatReport(
                     attacker_id=attacker.id,
                     severity=analysis.get("severity", "MEDIUM"),
                     description=analysis.get("description", "Suspicious command"),
-                    recommended_action=analysis.get("action", "Monitor")
+                    recommended_action=analysis.get("action", "Monitor"),
+                    service_type="ssh"
                 )
                 db.add(report)
 
